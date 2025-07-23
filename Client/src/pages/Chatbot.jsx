@@ -48,6 +48,9 @@ function Chatbot() {
     "how to get rid of dark circles?":[
       "Use undereye cream with ceramide, include this only in your pm routine.",
     ],
+    "i want some information about product":[
+      "Okay Which product information do you want?"
+    ],
   };
 
   const sendMessage = async () => {

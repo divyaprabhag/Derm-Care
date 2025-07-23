@@ -4,11 +4,14 @@ import Navbar from './components/Navbar';
 import './assets/css/core.css';
 import Home from './pages/Home';
 import Login from './pages/Login';
+import Auth from './pages/Auth';
 import Blog from './pages/Blog';
 import ProductPage from './pages/Products';
 import Cart from './components/Cart';
-import Chatbot from './pages/chatbot';
+import Chatbot from './pages/Chatbot';
 import axios from 'axios';
+import ProtectedRoute from "./components/ProtectedRoute";
+
 
 const App = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -183,13 +186,15 @@ const App = () => {
       )}
 
       <Routes>
-        <Route path="/" element={<Home />} />
+        // <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Auth />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/shop" element={<ProductPage searchTerm={searchTerm} onAddToCart={handleAddToCart} />} />
         <Route path="/cart" element={<Cart cartItems={cartItems} onRemoveFromCart={handleRemoveFromCart} onClearCart={handleClearCart} onPayNow={handlePayNow} />} />
         <Route path="/chatbot" element={<Chatbot />} />
       </Routes>
+
     </Router>
   );
 };
