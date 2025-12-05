@@ -4,81 +4,58 @@ import axios from "axios";
 function Chatbot() {
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  
-  const predefinedQA = {
-    hello: ["Hi there!", "Hello! How can I help you today?", "Hey! What's up?"],
-    "what is your name?": [
-      "I'm your chatbot assistant!",
-      "I am Chatbot, your virtual assistant.",
-      "People call me ChatGPT, but you can name me anything you like.",
-    ],
-    "how can i treat acne?": [
-      "I recommend a gentle cleanser and salicylic acid treatment , Use products with benzoyl peroxide for acne control , Consider consulting a dermatologist for persistent acne.",
-    ],
-    "what are your best products?": [
-      "Our top products include a cleanser, moisturizer, and sunscreen.",
-      "You should try our acne treatment gel and vitamin C serum.",
-      "Our best sellers are the hydration cream and sunscreen lotion.",
-    ],
-    "thank you": [
-      "You're welcome! 😊",
-      "Anytime! Let me know if you need more help.",
-      "No problem at all!",
-    ],
-    "i have a query on delivery date": [
-      "Kindly check the email to track your order",
-    ],
-    "hi":[
-      "Hi there! How can I help you today?",
-    ],
-    "which type of sunscreen can i use for my skin type?":[
-      "analyse your skin type first if you have oily skin use matte finish or gel based sunscreen if you have dry skin use watery based suncreen or cream based sunscreen if you have combination skin all type sunscreen suits your skin",
-      
-    ],
-    "how can i treat severe pigmentation?":[
-      "You can use less concenrated Glycolic acid to treat pigmentation , Do patch test before including to your skin care.",
-    ],
-    "give me a solution for blackheads?":[
-      "Include Salicylic based cleanser and serum to your skin care routine.",
-    ],
-    "how can i treat dry skin?":[
-      "Use snail mucin for extreme hydration Caution - patch test before use.",
-    ],
-    "how to get rid of dark circles?":[
-      "Use undereye cream with ceramide, include this only in your pm routine.",
-    ],
-  };
+  // Initialize with welcome message
+  useEffect(() => {
+    setMessages([
+      {
+        sender: "bot",
+        text: "Hello! Welcome to Derm-Care! I'm your skincare assistant. I can help you with skincare advice, product recommendations, and answer questions about our dermatology products. How can I assist you today?"
+      }
+    ]);
+  }, []);
 
   const sendMessage = async () => {
-    if (!userInput.trim()) return; 
-    setMessages((prevMessages) => [...prevMessages, { sender: "user", text: userInput }]);
+    if (!userInput.trim() || isLoading) return;
+    
+    const userMessage = userInput.trim();
+    setMessages((prevMessages) => [...prevMessages, { sender: "user", text: userMessage }]);
+    setUserInput("");
+    setIsLoading(true);
 
-    const userQuery = userInput.trim().toLowerCase();
-    if (predefinedQA[userQuery]) {
-      
-      const randomResponse =
-        predefinedQA[userQuery][Math.floor(Math.random() * predefinedQA[userQuery].length)];
-      
+    try {
+      const response = await axios.post('http://localhost:5000/api/chatbot/send', {
+        message: userMessage
+      });
+
+      if (response.data.success) {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { sender: "bot", text: response.data.response },
+        ]);
+      } else {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { sender: "bot", text: "Sorry, I couldn't process your request. Please try again." },
+        ]);
+      }
+    } catch (error) {
+      console.error('Chatbot error:', error);
       setMessages((prevMessages) => [
         ...prevMessages,
-        { sender: "bot", text: randomResponse },
+        { sender: "bot", text: "I'm having trouble connecting right now. Please try again later or contact us directly at 7695986564." },
       ]);
-      setUserInput(""); 
-      return;
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    
-    const contactResponse = `For Further queries, please contact:
-Phone: 7695986564
-Email: divyagprabha@gmail.com`;
-
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      { sender: "bot", text: contactResponse },
-    ]);
-
-    setUserInput(""); 
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
   };
 
   return (
@@ -96,21 +73,31 @@ Email: divyagprabha@gmail.com`;
               </span>
             </div>
           ))}
+          {isLoading && (
+            <div className="text-left text-gray-700">
+              <span className="inline-block px-3 py-2 bg-gray-200 rounded">
+                Assistant is thinking...
+              </span>
+            </div>
+          )}
         </div>
 
         <input
           type="text"
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
+          onKeyPress={handleKeyPress}
           placeholder="Type a message"
           className="w-full px-3 py-2 border rounded mb-2"
+          disabled={isLoading}
         />
 
         <button
           onClick={sendMessage}
-          className="w-full bg-pink-400 hover:bg-pink-500 text-black py-2 rounded"
+          disabled={isLoading || !userInput.trim()}
+          className="w-full bg-pink-400 hover:bg-pink-500 disabled:bg-gray-300 text-black py-2 rounded"
         >
-          Send
+          {isLoading ? "..." : "Send"}
         </button>
       </div>
     </div>
