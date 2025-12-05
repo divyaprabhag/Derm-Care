@@ -5,8 +5,8 @@ client/node_modules/
 
 # Env files
 .env
-Server/.env
-Client/.env
+server/.env
+client/.env
 
 # Logs
 logs
